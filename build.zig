@@ -1,18 +1,18 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
-
-    const lib = b.addExecutable(.{
+    const exe = b.addExecutable(.{
         .name = "mulang",
-        .rootSourceFile = .{ .path = "src/mulang.zig" },
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = b.graph.host,
+        }),
     });
 
-    lib.linkLibC(); // Optional: if you need libc
-    lib.dynamic_linkage = true; // 🔥 This makes it a shared library
+    b.installArtifact(exe);
 
-    b.installArtifact(lib);
+    const run_exe = b.addRunArtifact(exe);
+
+    const run_step = b.step("run", "Run the application");
+    run_step.dependOn(&run_exe.step);
 }
